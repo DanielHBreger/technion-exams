@@ -1,9 +1,4 @@
 import pandas as pd
-import numpy as np
-import re
-import datetime as dt
-from itertools import chain, zip_longest
-import os
 from pyuca import Collator
 
 threshold = 3
@@ -23,12 +18,6 @@ def replace_missing_exams(df):
     for col in ['מועד א\'', 'מועד ב\'']:
         df[col] = pd.to_datetime(df[col], errors='coerce')
     return df
-    # for row_name, row in df.iterrows():
-    #     if type(row['מועד א\'']) is not dt.datetime:
-    #         df.replace(row['מועד א\''], np.nan, inplace=True)
-    #     if type(row['מועד ב\'']) is not dt.datetime:
-    #         df.replace(row['מועד ב\''], np.nan, inplace=True)
-    # return df
 
 def get_maslulim(df):
     unique_maslulim = []
