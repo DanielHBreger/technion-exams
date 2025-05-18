@@ -90,6 +90,7 @@ def main():
                         problem_days.append(diffs_b.iloc[idx].days)
                     f.write(f"    {by_moed_b['שם קורס'].iloc[idx]}: {by_moed_b['מועד ב\''].iloc[idx]} ({diffs_b.iloc[idx].days} ימים)\n")
     df_problems = pd.DataFrame(list(zip(problems_maslul, problems_before, problems, problem_days)), columns=['מסלול', 'קורס לפני', 'קורס', 'מספר ימים'])
+    df_problems = df_problems.iloc[:,::-1]
     with open('warnings.md', 'w', encoding='utf-8') as f:
         f.write(df_problems.to_markdown(index=False, tablefmt='pipe', colalign=['center']*len(df_problems.columns)))
     print("Processing complete. Check 'unique_maslulim.txt' and 'warnings.txt' for results.")
