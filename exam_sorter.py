@@ -1,7 +1,6 @@
 import pandas as pd
 from pyuca import Collator
-
-threshold = 3
+import argparse
 
 def load_xlsx(file_path):
     """
@@ -33,14 +32,14 @@ def get_maslulim(df):
 
 def main():
     # Load the Excel file
-    file_path = 'פיזיקה בחינות חורף לעבכוד רק עם הקובץ הזהתשפו.xlsx'
+    file_path = args.filename
     df = load_xlsx(file_path)
     df = replace_missing_exams(df)
     unique_maslulim = get_maslulim(df)
     warnings = []
     warnings_by_maslul = {key:0 for key in unique_maslulim}
     date_cols = ['מועד א\'', 'מועד ב\'']
-    with open('unique_maslulim.txt', 'w', encoding='utf-8') as f:
+    with open(f'unique_maslulim-{args.filename}.txt', 'w', encoding='utf-8') as f:
         indices = [0,1,9,10,11,12]
         interesting_columns = [df.columns[indice] for indice in indices]
         problems = []
@@ -61,7 +60,7 @@ def main():
                 if idx == 0:
                     f.write(f"    {by_moed_a['שם קורס'].iloc[idx]}: {by_moed_a['מועד א\''].iloc[idx]}\n")
                 else:
-                    if diffs_a.iloc[idx].days <= threshold:
+                    if diffs_a.iloc[idx].days <= args.threshold:
                         problems.append(by_moed_a['שם קורס'].iloc[idx]+" מועד א'")
                         problems_maslul.append(maslul)
                         problems_before.append(by_moed_a['שם קורס'].iloc[idx-1] + " מועד א'")
@@ -72,7 +71,7 @@ def main():
                 if idx == 0:
                     f.write(f"    {by_moed_b['שם קורס'].iloc[idx]}: {by_moed_b['מועד ב\''].iloc[idx]}\n")
                 else:
-                    if diffs_b.iloc[idx].days <= threshold:
+                    if diffs_b.iloc[idx].days <= args.threshold:
                         problems.append(by_moed_b['שם קורס'].iloc[idx]+" מועד ב'")
                         problems_maslul.append(maslul)
                         problems_before.append(by_moed_b['שם קורס'].iloc[idx-1] + " מועד ב'")
@@ -81,9 +80,13 @@ def main():
     df_problems = pd.DataFrame(list(zip(problems_maslul, problems_before, problems, problem_days)), columns=['מסלול', 'קורס לפני', 'קורס', 'מספר ימים'])
     df_problems = df_problems.iloc[:,::-1]
     df_problems =  df_problems.sort_values(by=['קורס'])
-    with open('warnings.md', 'w', encoding='utf-8') as f:
+    with open(f'warnings-{args.filename}.md', 'w', encoding='utf-8') as f:
         f.write(df_problems.to_markdown(index=False, tablefmt='pipe', colalign=['center']*len(df_problems.columns)))
     print("Processing complete. Check 'unique_maslulim.txt' and 'warnings.txt' for results.")
             
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename')
+    parser.add_argument('threshold', type=int, default=3, help='Number of days to check for exam proximity')
+    args=parser.parse_args()
     main()
